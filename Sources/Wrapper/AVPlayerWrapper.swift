@@ -8,16 +8,15 @@
 
 import AVFoundation
 
-class AVPlayerWrapper: MediaPlayerType {
+public final class AVPlayerWrapper: WrappedPlayer {
 
     private var player: AVPlayer
 
     private var playerObserver = AVPlayerObserver()
-
     private var playerTimeObserver = AVPlayerTimeObserver()
 
-    var _state: MediaPlayer.State = .idle
-    var state: MediaPlayer.State {
+    var _state: MediaState = .idle
+    public var state: MediaState {
         get { _state }
         set {
             if _state != newValue {
@@ -27,12 +26,12 @@ class AVPlayerWrapper: MediaPlayerType {
         }
     }
 
-    var currentTime: TimeInterval {
+    public var currentTime: TimeInterval {
         let seconds = player.currentTime().seconds
         return seconds.isNaN ? .zero : seconds
     }
 
-    var duration: TimeInterval {
+    public var duration: TimeInterval {
         if let seconds = player.currentItem?.duration.seconds, !seconds.isNaN {
             return seconds
         } else if let seconds = player.currentItem?.seekableTimeRanges.last?.timeRangeValue.duration.seconds,
@@ -42,39 +41,25 @@ class AVPlayerWrapper: MediaPlayerType {
         return .zero
     }
 
-    weak var delegate: MediaPlayer.Delegate?
+    public weak var delegate: WrappedPlayerDelegate?
 
-    init(_ player: AVPlayer = .init()) {
-        self.player = player
-
-        setupObservation()
-    }
-
-    private func setupObservation() {
-        playerObserver.delegate = self
-        playerTimeObserver.delegate = self
-
-        playerObserver.startObserving(player: player)
-        playerTimeObserver.startObserving(player: player)
-    }
-
-    func loadFile(url: URL) {
+    public func loadFile(url: URL) {
         player.replaceCurrentItem(with: .init(url: url))
     }
 
-    func play() {
+    public func play() {
         player.play()
     }
 
-    func pause() {
+    public func pause() {
         player.pause()
     }
 
-    func stop() {
+    public func stop() {
         player.pause()
     }
 
-    func seek(to seconds: TimeInterval) {
+    public func seek(to seconds: TimeInterval) {
         if player.currentItem == nil {
 //            timeToSeekToAfterLoading = seconds
         } else {
@@ -85,8 +70,37 @@ class AVPlayerWrapper: MediaPlayerType {
         }
     }
 
-    func seek(by offset: TimeInterval) {
+    public func seek(by offset: TimeInterval) {
 
+    }
+
+    init(_ player: AVPlayer = .init()) {
+        self.player = player
+
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        playerObserver.delegate = self
+        playerTimeObserver.delegate = self
+
+        playerObserver.startObserving(player: player)
+        playerTimeObserver.startObserving(player: player)
+    }
+}
+
+extension AVPlayerWrapper: VideoAssociation {
+
+    public static func create() -> AVPlayerWrapper? {
+        AVPlayerWrapper()
+    }
+
+    public func associate(with contentView: AVPlayerContentView) {
+        contentView.player = player
+    }
+
+    public func dissociate(from contentView: AVPlayerContentView) {
+        contentView.player = nil
     }
 }
 

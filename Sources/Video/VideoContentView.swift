@@ -1,5 +1,5 @@
 //
-//  VideoPlayerContentView.swift
+//  VideoContentView.swift
 //  OtoFlow
 //
 //  Created by foyoodo on 2024/8/8.
@@ -10,13 +10,13 @@ import UIKit
 import AVFoundation
 import MPVPlayer
 
-class VideoPlayerContentView: UIView {
+open class VideoContentView: UIView {
 
 }
 
-class AVPlayerContentView: VideoPlayerContentView {
+public final class AVPlayerContentView: VideoContentView {
 
-    override class var layerClass: AnyClass {
+    public override class var layerClass: AnyClass {
         AVPlayerLayer.self
     }
 
@@ -24,15 +24,15 @@ class AVPlayerContentView: VideoPlayerContentView {
         layer as! AVPlayerLayer
     }
 
-    var player: AVPlayer? {
+    public var player: AVPlayer? {
         get { playerLayer.player }
         set { playerLayer.player = newValue }
     }
 }
 
-class MPVPlayerContentView: VideoPlayerContentView {
+public final class MPVPlayerContentView: VideoContentView {
 
-    override class var layerClass: AnyClass {
+    public override class var layerClass: AnyClass {
         MetalLayer.self
     }
 

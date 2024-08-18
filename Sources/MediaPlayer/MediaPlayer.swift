@@ -9,93 +9,108 @@
 import Foundation
 import Combine
 
-public class MediaPlayer {
+public struct TimeElapse {
 
-    public struct TimeElapse {
+    static var frozen = TimeElapse(seconds: .zero, currentTime: .zero, duration: .zero)
 
-        static var frozen = TimeElapse(seconds: .zero, currentTime: .zero, duration: .zero)
+    public var seconds: TimeInterval
 
-        public var seconds: TimeInterval
+    public var currentTime: TimeInterval
 
-        public var currentTime: TimeInterval
+    public var duration: TimeInterval
+}
 
-        public var duration: TimeInterval
-    }
+open class MediaPlayer<T: MediaEndpoint> {
+
+    public typealias Endpoint = T
+    public typealias Item = Endpoint.Item
 
     @Published
-    public var state: State = .idle
+    public var state: MediaState = .idle
 
     @Published
     public var timeElapse: TimeElapse = .frozen
 
-    private var wrappedPlayer: MediaPlayerType
+    @Published
+    public var currentItem: Item?
 
-    public var configuration: Configuration
+    public var upcomingItems: [Item] {
+        []
+    }
 
-    private var contentViewConfigure: ((VideoPlayerContentView) -> ())?
+    public var endpoint: Endpoint
 
     public var currentTime: TimeInterval {
-        wrappedPlayer.currentTime
+        endpoint.currentTime
     }
 
     public var duration: TimeInterval {
-        wrappedPlayer.duration
+        endpoint.duration
     }
 
-    public init(configuration: Configuration) {
-        self.configuration = configuration
-
-        var contentViewConfigure: ((VideoPlayerContentView) -> ())?
-
-        wrappedPlayer = configuration.wrappedPlayer { binding in
-            contentViewConfigure = binding
-        }
-        wrappedPlayer.delegate = self
-
-        self.contentViewConfigure = contentViewConfigure
+    public init(endpoint: Endpoint) {
+        self.endpoint = endpoint
+        self.endpoint.delegate = self
+        self.endpoint.playerDelegate = self
     }
 
-    func wire(to contentView: VideoPlayerContentView) {
-        contentViewConfigure?(contentView)
-        contentViewConfigure = nil
-    }
-
-    public func loadFile(url: URL) {
-        wrappedPlayer.loadFile(url: url)
+    public func play(_ item: Item) {
+        endpoint.play(item)
     }
 
     public func play() {
-        wrappedPlayer.play()
+        endpoint.play()
     }
 
     public func pause() {
-        wrappedPlayer.pause()
+        endpoint.pause()
     }
 
     public func stop() {
-        wrappedPlayer.stop()
+        endpoint.stop()
+    }
+
+    public func previous(replayInterval seconds: TimeInterval? = nil) {
+        if let seconds, currentTime < seconds {
+            seek(to: .zero)
+        } else {
+            
+        }
+    }
+
+    public func next() {
+
     }
 
     public func seek(to seconds: TimeInterval) {
-        wrappedPlayer.seek(to: seconds)
+        endpoint.seek(to: seconds)
     }
 
     public func seek(by seconds: TimeInterval) {
-        wrappedPlayer.seek(by: seconds)
+        endpoint.seek(by: seconds)
     }
 }
 
-extension MediaPlayer: MediaPlayer.Delegate {
+// MARK: - MediaPlaybackDelegate
+extension MediaPlayer: MediaPlaybackDelegate {
 
-    public func player(_ player: MediaPlayerType, stateChanged state: State) {
-        self.state = state
+    public func playback(itemChanged item: Item?) {
+        currentItem = item
+    }
+}
+
+// MARK: - WrappedPlayerDelegate
+extension MediaPlayer: WrappedPlayerDelegate {
+
+    public func player(_ player: WrappedPlayer, stateChanged newState: MediaState) {
+        state = newState
     }
 
-    public func player(_ player: MediaPlayerType, seekTo seconds: TimeInterval, finished: Bool) {
+    public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
 
     }
 
-    public func player(_ player: MediaPlayerType, secondsElapse seconds: TimeInterval) {
+    public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
         timeElapse = TimeElapse(seconds: seconds, currentTime: currentTime, duration: duration)
     }
 }

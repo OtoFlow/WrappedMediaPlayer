@@ -9,15 +9,15 @@
 import Foundation
 import MPVPlayer
 
-class MPVPlayerWrapper: MediaPlayerType {
+public final class MPVPlayerWrapper: WrappedPlayer {
 
     private var player: MPVPlayer
 
     private var playerTimeObserver = MPVPlayerTimeObserver()
 
-    var _state: MediaPlayer.State = .idle
+    var _state: MediaState = .idle
 
-    var state: MediaPlayer.State {
+    public var state: MediaState {
         get { _state }
         set {
             if _state != newValue {
@@ -27,58 +27,73 @@ class MPVPlayerWrapper: MediaPlayerType {
         }
     }
 
-    var currentTime: TimeInterval {
+    public var currentTime: TimeInterval {
         player.playbackTime
     }
 
-    var duration: TimeInterval {
+    public var duration: TimeInterval {
         player.duration
     }
 
-    weak var delegate: MediaPlayer.Delegate?
+    public weak var delegate: WrappedPlayerDelegate?
+
+    public func loadFile(url: URL) {
+        player.loadFile(url: url)
+    }
+
+    public func play() {
+        player.play()
+    }
+
+    public func pause() {
+        player.pause()
+    }
+
+    public func stop() {
+        player.stop()
+    }
+
+    public func seek(to seconds: TimeInterval) {
+        player.seek(to: seconds)
+    }
+
+    public func seek(by seconds: TimeInterval) {
+        player.seek(by: seconds)
+    }
 
     init(_ player: MPVPlayer = .init()) {
         self.player = player
 
         player.delegate = self
 
-        setupObservation()
+        setupObservers()
     }
 
-    private func setupObservation() {
+    private func setupObservers() {
         playerTimeObserver.delegate = self
 
         playerTimeObserver.startObserving(player: player)
     }
+}
 
-    func loadFile(url: URL) {
-        player.loadFile(url: url)
+extension MPVPlayerWrapper: VideoAssociation {
+
+    public static func create() -> MPVPlayerWrapper? {
+        MPVPlayerWrapper()
     }
 
-    func play() {
-        player.play()
+    public func associate(with contentView: MPVPlayerContentView) {
+        player.metalLayer = contentView.metalLayer
     }
 
-    func pause() {
-        player.pause()
-    }
-
-    func stop() {
-
-    }
-
-    func seek(to seconds: TimeInterval) {
-        player.seek(to: seconds)
-    }
-
-    func seek(by seconds: TimeInterval) {
-        player.seek(by: seconds)
+    public func dissociate(from contentView: MPVPlayerContentView) {
+        player.metalLayer = nil
     }
 }
 
 extension MPVPlayerWrapper: MPVPlayer.Delegate {
 
-    func player(_ player: MPVPlayer, stateChanged newState: MPVPlayer.State) {
+    public func player(_ player: MPVPlayer, stateChanged newState: MPVPlayer.State) {
         switch newState {
         case .playing:
             state = .playing
