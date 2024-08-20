@@ -7,7 +7,11 @@
 
 import Foundation
 
-public protocol WrappedPlayer {
+public protocol WrappedPlayer: AnyObject {
+
+    var playWhenReady: Bool { get set }
+
+    var rate: Float { get set }
 
     var currentTime: TimeInterval { get }
 

@@ -34,6 +34,9 @@ open class MediaPlayer<T: MediaEndpoint> {
     @Published
     public var currentItem: Item?
 
+    @Published
+    public var items: [Item] = []
+
     public var upcomingItems: [Item] {
         []
     }
@@ -51,11 +54,42 @@ open class MediaPlayer<T: MediaEndpoint> {
     public init(endpoint: Endpoint) {
         self.endpoint = endpoint
         self.endpoint.delegate = self
-        self.endpoint.playerDelegate = self
     }
 
     public func play(_ item: Item) {
         endpoint.play(item)
+    }
+
+    public func play(_ items: [Item]) {
+        endpoint.play(items)
+    }
+
+    public func append(_ item: Item, playWhenReady: Bool? = true) {
+        endpoint.append(item, playWhenReady: playWhenReady)
+    }
+
+    public func append(_ items: [Item], playWhenReady: Bool? = true) {
+        endpoint.append(items, playWhenReady: playWhenReady)
+    }
+
+    @discardableResult
+    public func previous(replayInterval seconds: TimeInterval? = nil) -> Item? {
+        if let seconds, currentTime < seconds {
+            seek(to: .zero)
+            return currentItem
+        } else {
+            return endpoint.previous()
+        }
+    }
+
+    @discardableResult
+    public func next() -> Item? {
+        endpoint.next()
+    }
+
+    @discardableResult
+    public func jumpToItem(at index: Int) -> Item? {
+        endpoint.jumpToItem(at: index)
     }
 
     public func play() {
@@ -70,18 +104,6 @@ open class MediaPlayer<T: MediaEndpoint> {
         endpoint.stop()
     }
 
-    public func previous(replayInterval seconds: TimeInterval? = nil) {
-        if let seconds, currentTime < seconds {
-            seek(to: .zero)
-        } else {
-            
-        }
-    }
-
-    public func next() {
-
-    }
-
     public func seek(to seconds: TimeInterval) {
         endpoint.seek(to: seconds)
     }
@@ -94,8 +116,12 @@ open class MediaPlayer<T: MediaEndpoint> {
 // MARK: - MediaPlaybackDelegate
 extension MediaPlayer: MediaPlaybackDelegate {
 
-    public func playback(itemChanged item: Item?) {
-        currentItem = item
+    public func playback(itemChanged newItem: Item?) {
+        currentItem = newItem
+    }
+
+    public func playback(itemsChanged newItems: [Item]) {
+        items = newItems
     }
 }
 

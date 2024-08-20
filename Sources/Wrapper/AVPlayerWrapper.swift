@@ -15,6 +15,22 @@ public final class AVPlayerWrapper: WrappedPlayer {
     private var playerObserver = AVPlayerObserver()
     private var playerTimeObserver = AVPlayerTimeObserver()
 
+    public var playWhenReady: Bool = false {
+        didSet {
+            applyAVPlayerRate()
+        }
+    }
+
+    public var rate: Float = 1.0 {
+        didSet {
+            player.rate = rate
+
+            if #available(iOS 16.0, *) {
+                player.defaultRate = rate
+            }
+        }
+    }
+
     var _state: MediaState = .idle
     public var state: MediaState {
         get { _state }
@@ -77,7 +93,13 @@ public final class AVPlayerWrapper: WrappedPlayer {
     init(_ player: AVPlayer = .init()) {
         self.player = player
 
+        setupAVPlayer()
+    }
+
+    private func setupAVPlayer() {
         setupObservers()
+
+        applyAVPlayerRate()
     }
 
     private func setupObservers() {
@@ -86,6 +108,10 @@ public final class AVPlayerWrapper: WrappedPlayer {
 
         playerObserver.startObserving(player: player)
         playerTimeObserver.startObserving(player: player)
+    }
+
+    private func applyAVPlayerRate() {
+        player.rate = playWhenReady ? rate : 0.0
     }
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: MediaEndpoint {
 
@@ -35,17 +36,19 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         audioPlayer.duration
     }
 
-    public weak var delegate: (any MediaPlaybackDelegate<Item>)?
-
-    public weak var playerDelegate: WrappedPlayerDelegate? {
+    public weak var delegate: (any MediaPlaybackDelegate<Item>)? {
         didSet {
-            audioPlayer.delegate = playerDelegate
+            audioPlayer.delegate = delegate
         }
     }
 
+    private var queue = QueueManager<Item>()
+
+    private(set) var currentItem: Item?
+
     public let configuration: Configuration
 
-    private var currentItem: Item?
+    private var cancellables = Set<AnyCancellable>()
 
     public init(configuration: Configuration = .init()) {
         self.configuration = configuration
@@ -54,6 +57,52 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
 
         self.audioPlayer = audioPlayer
         self.videoPlayer = configuration.createVideoEngine ? VideoPlayer.create() : audioPlayer as? VideoPlayer.Endpoint
+
+        setupBindings()
+    }
+
+    private func setupBindings() {
+        queue.$currentItem
+            .sink { [unowned self] item in
+                currentItem = item
+                if let item {
+                    load(item: item)
+                }
+                delegate?.playback(itemChanged: item)
+            }
+            .store(in: &cancellables)
+
+        queue.$items
+            .sink { [unowned self] items in
+                delegate?.playback(itemsChanged: items)
+            }
+            .store(in: &cancellables)
+    }
+
+    private var playWhenReady: Bool {
+        get { player.playWhenReady }
+        set { player.playWhenReady = newValue }
+    }
+
+    private func handlePlayWhenReady<T>(_ playWhenReady: Bool?, _ closure: () -> T) -> T {
+        if playWhenReady == false {
+            self.playWhenReady = false
+        }
+
+        defer {
+            if playWhenReady == true {
+                self.playWhenReady = true
+            }
+        }
+
+        return closure()
+    }
+
+    func load(item: Item) {
+        guard let url = item.getSourceUrl() else {
+            return
+        }
+        player.loadFile(url: url)
     }
 
     public func loadFile(url: URL) {
@@ -61,20 +110,43 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
     }
 
     public func play(_ item: Item) {
-        guard let url = item.getSourceUrl() else {
-            return
+        handlePlayWhenReady(true) {
+            queue.replace(using: item)
         }
-
-        currentItem = item
-
-        player.loadFile(url: url)
-        player.play()
-
-        delegate?.playback(itemChanged: item)
     }
 
     public func play(_ items: [Item]) {
+        handlePlayWhenReady(true) {
+            queue.replace(using: items)
+        }
+    }
 
+    public func append(_ item: Item, playWhenReady: Bool?) {
+        handlePlayWhenReady(playWhenReady) {
+            queue.append(item)
+        }
+    }
+
+    public func append(_ items: [Item], playWhenReady: Bool?) {
+        handlePlayWhenReady(playWhenReady) {
+            queue.append(items)
+        }
+    }
+
+    public func insert(_ item: Item, at index: Int) {
+        queue.insert(item, at: index)
+    }
+
+    public func previous() -> Item? {
+        queue.previous()
+    }
+
+    public func next() -> Item? {
+        queue.next()
+    }
+
+    public func jumpToItem(at index: Int) -> Item? {
+        queue.jump(to: index)
     }
 
     public func play() {
@@ -116,14 +188,14 @@ extension LocalMediaEndpoint: VideoAssociation {
 extension LocalMediaEndpoint: WrappedPlayerDelegate {
 
     public func player(_ player: any WrappedPlayer, stateChanged newState: MediaState) {
-        playerDelegate?.player(player, stateChanged: newState)
+        delegate?.player(player, stateChanged: newState)
     }
 
     public func player(_ player: any WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
-        playerDelegate?.player(player, seekTo: seconds, finished: finished)
+        delegate?.player(player, seekTo: seconds, finished: finished)
     }
 
     public func player(_ player: any WrappedPlayer, secondsElapse seconds: TimeInterval) {
-        playerDelegate?.player(player, secondsElapse: seconds)
+        delegate?.player(player, secondsElapse: seconds)
     }
 }

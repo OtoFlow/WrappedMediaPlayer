@@ -15,6 +15,10 @@ public final class MPVPlayerWrapper: WrappedPlayer {
 
     private var playerTimeObserver = MPVPlayerTimeObserver()
 
+    public var playWhenReady: Bool = false
+
+    public var rate: Float = 1.0
+
     var _state: MediaState = .idle
 
     public var state: MediaState {
@@ -38,6 +42,13 @@ public final class MPVPlayerWrapper: WrappedPlayer {
     public weak var delegate: WrappedPlayerDelegate?
 
     public func loadFile(url: URL) {
+        player.loadFile(url: url)
+    }
+
+    public func loadFile(url: URL, playWhenReady: Bool?) {
+        if let playWhenReady {
+            self.playWhenReady = playWhenReady
+        }
         player.loadFile(url: url)
     }
 

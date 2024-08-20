@@ -8,7 +8,7 @@
 
 import UIKit
 
-open class VideoPlayerView<V: WrappedVideoPlayer>: UIView {
+open class VideoPlayerView<V: VideoAssociation>: UIView {
 
     public typealias VideoPlayer = V
 

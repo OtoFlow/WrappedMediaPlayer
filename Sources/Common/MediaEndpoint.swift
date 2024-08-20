@@ -17,13 +17,23 @@ public protocol MediaEndpoint {
 
     var delegate: (any MediaPlaybackDelegate<Item>)? { get set }
 
-    var playerDelegate: WrappedPlayerDelegate? { get set }
-
     func loadFile(url: URL)
 
     func play(_ item: Item)
 
     func play(_ items: [Item])
+
+    func append(_ item: Item, playWhenReady: Bool?)
+
+    func append(_ items: [Item], playWhenReady: Bool?)
+
+    func insert(_ item: Item, at index: Int)
+
+    func previous() -> Item?
+
+    func next() -> Item?
+
+    func jumpToItem(at index: Int) -> Item?
 
     func play()
 
