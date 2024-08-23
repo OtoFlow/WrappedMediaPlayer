@@ -72,6 +72,14 @@ open class MediaPlayer<T: MediaEndpoint> {
         endpoint.append(items, playWhenReady: playWhenReady)
     }
 
+    public func insertNext(_ item: Item, playWhenReady: Bool? = true) {
+        endpoint.insertNext(item, playWhenReady: playWhenReady)
+    }
+
+    public func insertNext(_ items: [Item], playWhenReady: Bool? = true) {
+        endpoint.insertNext(items, playWhenReady: playWhenReady)
+    }
+
     @discardableResult
     public func previous(replayInterval seconds: TimeInterval? = nil) -> Item? {
         if let seconds, currentTime < seconds {

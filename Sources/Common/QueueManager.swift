@@ -108,6 +108,18 @@ final class QueueManager<Item> {
         }
     }
 
+    func insertNext(_ newItem: Item) {
+        synchronize {
+            items.insert(newItem, at: currentIndex + 1)
+        }
+    }
+
+    func insertNext(_ newItems: [Item]) {
+        synchronize {
+            items.insert(contentsOf: newItems, at: currentIndex + 1)
+        }
+    }
+
     private enum SkipDirection: Int {
         case previous = -1
         case next = 1

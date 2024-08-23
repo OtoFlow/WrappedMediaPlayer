@@ -99,10 +99,7 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
     }
 
     func load(item: Item) {
-        guard let url = item.getSourceUrl() else {
-            return
-        }
-        player.loadFile(url: url)
+        item.getSourceUrl().map(player.loadFile(url:))
     }
 
     public func loadFile(url: URL) {
@@ -135,6 +132,22 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
 
     public func insert(_ item: Item, at index: Int) {
         queue.insert(item, at: index)
+    }
+
+    public func insert(_ items: [Item], at index: Int) {
+        queue.insert(items, at: index)
+    }
+
+    public func insertNext(_ item: Item, playWhenReady: Bool?) {
+        handlePlayWhenReady(playWhenReady) {
+            queue.insertNext(item)
+        }
+    }
+
+    public func insertNext(_ items: [Item], playWhenReady: Bool?) {
+        handlePlayWhenReady(playWhenReady) {
+            queue.insertNext(items)
+        }
     }
 
     public func previous() -> Item? {

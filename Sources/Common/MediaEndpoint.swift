@@ -29,6 +29,12 @@ public protocol MediaEndpoint {
 
     func insert(_ item: Item, at index: Int)
 
+    func insert(_ items: [Item], at index: Int)
+
+    func insertNext(_ item: Item, playWhenReady: Bool?)
+
+    func insertNext(_ items: [Item], playWhenReady: Bool?)
+
     func previous() -> Item?
 
     func next() -> Item?
