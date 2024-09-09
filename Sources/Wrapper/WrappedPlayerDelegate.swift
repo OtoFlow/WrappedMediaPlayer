@@ -14,4 +14,6 @@ public protocol WrappedPlayerDelegate: AnyObject {
     func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool)
 
     func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval)
+
+    func playerPlayToEndTime(_ player: WrappedPlayer)
 }

@@ -152,4 +152,8 @@ extension MediaPlayer: WrappedPlayerDelegate {
     public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
         timeElapse = TimeElapse(seconds: seconds, currentTime: currentTime, duration: duration)
     }
+
+    public func playerPlayToEndTime(_ player: any WrappedPlayer) {
+        _ = endpoint.next()
+    }
 }

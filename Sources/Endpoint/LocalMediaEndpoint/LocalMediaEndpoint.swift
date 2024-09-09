@@ -159,7 +159,7 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
     }
 
     public func next() -> Item? {
-        queue.next()
+        queue.next(cycle: true)
     }
 
     public func jumpToItem(at index: Int, playWhenReady: Bool?) -> Item? {

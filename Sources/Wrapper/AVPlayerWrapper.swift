@@ -14,6 +14,7 @@ public final class AVPlayerWrapper: WrappedPlayer {
 
     private var playerObserver = AVPlayerObserver()
     private var playerTimeObserver = AVPlayerTimeObserver()
+    private var playerItemNotificationObserver = AVPlayerItemNotificationObserver()
 
     public var playWhenReady: Bool = false {
         didSet {
@@ -60,7 +61,11 @@ public final class AVPlayerWrapper: WrappedPlayer {
     public weak var delegate: WrappedPlayerDelegate?
 
     public func loadFile(url: URL) {
-        player.replaceCurrentItem(with: .init(url: url))
+        let item = AVPlayerItem(url: url)
+
+        player.replaceCurrentItem(with: item)
+
+        playerItemNotificationObserver.startObserving(playerItem: item)
     }
 
     public func play() {
@@ -105,6 +110,7 @@ public final class AVPlayerWrapper: WrappedPlayer {
     private func setupObservers() {
         playerObserver.delegate = self
         playerTimeObserver.delegate = self
+        playerItemNotificationObserver.delegate = self
 
         playerObserver.startObserving(player: player)
         playerTimeObserver.startObserving(player: player)
@@ -161,5 +167,12 @@ extension AVPlayerWrapper: AVPlayerTimeObserver.Delegate {
 
     func player(_ player: AVPlayer, timeChanged time: CMTime) {
         delegate?.player(self, secondsElapse: time.seconds)
+    }
+}
+
+extension AVPlayerWrapper: AVPlayerItemNotificationObserver.Delegate {
+
+    func playerItemPlayToEndTime(_ playerItem: AVPlayerItem) {
+        delegate?.playerPlayToEndTime(self)
     }
 }
