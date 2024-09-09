@@ -38,7 +38,7 @@ open class MediaPlayer<T: MediaEndpoint> {
     public var items: [Item] = []
 
     public var upcomingItems: [Item] {
-        []
+        endpoint.upcomingItems
     }
 
     public var endpoint: Endpoint
@@ -96,8 +96,13 @@ open class MediaPlayer<T: MediaEndpoint> {
     }
 
     @discardableResult
-    public func jumpToItem(at index: Int) -> Item? {
-        endpoint.jumpToItem(at: index)
+    public func jumpToItem(at index: Int, playWhenReady: Bool? = true) -> Item? {
+        endpoint.jumpToItem(at: index, playWhenReady: playWhenReady)
+    }
+
+    @discardableResult
+    public func jumpNext(_ count: Int) -> Item? {
+        endpoint.jumpNext(count)
     }
 
     public func play() {

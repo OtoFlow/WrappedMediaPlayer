@@ -36,6 +36,10 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         audioPlayer.duration
     }
 
+    public var upcomingItems: [Item] {
+        queue.nextItems
+    }
+
     public weak var delegate: (any MediaPlaybackDelegate<Item>)? {
         didSet {
             audioPlayer.delegate = delegate
@@ -158,8 +162,14 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         queue.next()
     }
 
-    public func jumpToItem(at index: Int) -> Item? {
-        queue.jump(to: index)
+    public func jumpToItem(at index: Int, playWhenReady: Bool?) -> Item? {
+        handlePlayWhenReady(playWhenReady) {
+            queue.jump(to: index)
+        }
+    }
+
+    public func jumpNext(_ count: Int) -> Item? {
+        queue.jumpNext(count)
     }
 
     public func play() {

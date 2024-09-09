@@ -15,6 +15,8 @@ public protocol MediaEndpoint {
 
     var duration: TimeInterval { get }
 
+    var upcomingItems: [Item] { get }
+
     var delegate: (any MediaPlaybackDelegate<Item>)? { get set }
 
     func loadFile(url: URL)
@@ -39,7 +41,9 @@ public protocol MediaEndpoint {
 
     func next() -> Item?
 
-    func jumpToItem(at index: Int) -> Item?
+    func jumpToItem(at index: Int, playWhenReady: Bool?) -> Item?
+
+    func jumpNext(_ count: Int) -> Item?
 
     func play()
 

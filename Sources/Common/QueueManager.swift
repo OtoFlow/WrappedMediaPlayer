@@ -166,4 +166,11 @@ final class QueueManager<Item> {
             return currentItem
         }
     }
+
+    @discardableResult
+    func jumpNext(_ count: Int) -> Item? {
+        synchronize {
+            jump(to: currentIndex + count)
+        }
+    }
 }
