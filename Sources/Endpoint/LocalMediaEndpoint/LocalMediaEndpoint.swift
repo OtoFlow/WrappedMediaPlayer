@@ -207,18 +207,3 @@ extension LocalMediaEndpoint: VideoAssociation {
         videoPlayer?.dissociate(from: contentView)
     }
 }
-
-extension LocalMediaEndpoint: WrappedPlayerDelegate {
-
-    public func player(_ player: any WrappedPlayer, stateChanged newState: MediaState) {
-        delegate?.player(player, stateChanged: newState)
-    }
-
-    public func player(_ player: any WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
-        delegate?.player(player, seekTo: seconds, finished: finished)
-    }
-
-    public func player(_ player: any WrappedPlayer, secondsElapse seconds: TimeInterval) {
-        delegate?.player(player, secondsElapse: seconds)
-    }
-}
