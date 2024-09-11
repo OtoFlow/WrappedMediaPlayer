@@ -103,7 +103,7 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
     }
 
     func load(item: Item) {
-        item.getSourceUrl().map(player.loadFile(url:))
+        player.loadMedia(item: item)
     }
 
     public func loadFile(url: URL) {

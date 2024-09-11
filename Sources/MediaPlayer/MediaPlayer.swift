@@ -43,6 +43,8 @@ open class MediaPlayer<T: MediaEndpoint> {
 
     public var endpoint: Endpoint
 
+    let nowPlayingController = NowPlayingInfoController()
+
     public var currentTime: TimeInterval {
         endpoint.currentTime
     }
@@ -131,6 +133,30 @@ extension MediaPlayer: MediaPlaybackDelegate {
 
     public func playback(itemChanged newItem: Item?) {
         currentItem = newItem
+
+        guard let item = newItem else {
+            nowPlayingController.updater.clear()
+            return
+        }
+
+        nowPlayingController.updater
+            .update(.assertURL, value: item.getSourceUrl())
+            .update(.mediaType, value: item.getMediaType().nowPlaying.rawValue)
+            .update(.title, value: item.getTitle())
+            .update(.artist, value: item.getArtists())
+            .update(.albumTitle, value: item.getAlbumTitle())
+
+        Task { [weak self] in
+            guard let artwork = await item.getArtwork() else {
+                self?.nowPlayingController.updater.update(.artwork, value: nil)
+                return
+            }
+
+            self?.nowPlayingController.updater.update(.artwork, value: .init(
+                boundsSize: artwork.size,
+                requestHandler: { _ in artwork }
+            ))
+        }
     }
 
     public func playback(itemsChanged newItems: [Item]) {
@@ -143,6 +169,8 @@ extension MediaPlayer: WrappedPlayerDelegate {
 
     public func player(_ player: WrappedPlayer, stateChanged newState: MediaState) {
         state = newState
+
+        nowPlayingController.playbackState = newState == .playing ? .playing : .paused
     }
 
     public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
@@ -151,6 +179,10 @@ extension MediaPlayer: WrappedPlayerDelegate {
 
     public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
         timeElapse = TimeElapse(seconds: seconds, currentTime: currentTime, duration: duration)
+
+        nowPlayingController.updater
+            .update(.currentTime, value: currentTime)
+            .update(.duration, value: duration)
     }
 
     public func playerPlayToEndTime(_ player: any WrappedPlayer) {

@@ -5,8 +5,8 @@
 //  Created by foyoodo on 2024/8/18.
 //
 
-import Foundation
 import UIKit
+import MediaPlayer
 
 public enum MediaType {
 
@@ -15,11 +15,21 @@ public enum MediaType {
     case video
 }
 
+extension MediaType {
+
+    var nowPlaying: MPNowPlayingInfoMediaType {
+        switch self {
+        case .audio: .audio
+        case .video: .video
+        }
+    }
+}
+
 public protocol MediaItem {
 
     func getMediaType() -> MediaType
 
-    func getSourceUrl() -> URL?
+    func getSourceUrl() -> URL
 
     func getArtists() -> String?
 
@@ -45,7 +55,7 @@ public struct AnyMediaItem: MediaItem {
         self.base = base
     }
 
-    public func getSourceUrl() -> URL? {
+    public func getSourceUrl() -> URL {
         base.getSourceUrl()
     }
 

@@ -21,6 +21,8 @@ public protocol WrappedPlayer: AnyObject {
 
     func loadFile(url: URL)
 
+    func loadMedia(item: any MediaItem)
+
     func play()
 
     func pause()
@@ -30,6 +32,13 @@ public protocol WrappedPlayer: AnyObject {
     func seek(to seconds: TimeInterval)
 
     func seek(by offset: TimeInterval)
+}
+
+extension WrappedPlayer {
+
+    public func loadMedia(item: any MediaItem) {
+        loadFile(url: item.getSourceUrl())
+    }
 }
 
 public protocol VideoAssociation {

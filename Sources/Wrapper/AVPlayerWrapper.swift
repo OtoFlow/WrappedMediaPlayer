@@ -68,6 +68,12 @@ public final class AVPlayerWrapper: WrappedPlayer {
         playerItemNotificationObserver.startObserving(playerItem: item)
     }
 
+    public func loadMedia(item: any MediaItem) {
+        player.allowsExternalPlayback = item.getMediaType() != .audio
+
+        loadFile(url: item.getSourceUrl())
+    }
+
     public func play() {
         player.play()
     }
@@ -97,6 +103,8 @@ public final class AVPlayerWrapper: WrappedPlayer {
 
     init(_ player: AVPlayer = .init()) {
         self.player = player
+
+        player.usesExternalPlaybackWhileExternalScreenIsActive = true
 
         setupAVPlayer()
     }
