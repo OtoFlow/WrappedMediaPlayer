@@ -28,6 +28,11 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         }
     }
 
+    public var playbackRate: Float {
+        get { audioPlayer.rate }
+        set { audioPlayer.rate = newValue }
+    }
+
     public var currentTime: TimeInterval {
         audioPlayer.currentTime
     }

@@ -11,6 +11,8 @@ public protocol MediaEndpoint {
 
     associatedtype Item: MediaItem
 
+    var playbackRate: Float { get set }
+
     var currentTime: TimeInterval { get }
 
     var duration: TimeInterval { get }
