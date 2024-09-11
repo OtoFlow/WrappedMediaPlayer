@@ -40,9 +40,9 @@ extension RemoteCommands {
 
     public static let changeShuffleMode = RemoteCommand<MPChangeShuffleModeCommandEvent>(.changeShuffleMode)
 
-    public static let nextTrack = RemoteCommand(.nextTrack)
+    public static let nextTrack = RemoteCommand(.next)
 
-    public static let previousTrack = RemoteCommand(.previousTrack)
+    public static let previousTrack = RemoteCommand(.previous)
 
     public static let seekForward = RemoteCommand<MPSeekCommandEvent>(.seekForward)
 
@@ -52,11 +52,11 @@ extension RemoteCommands {
 
     public static let rating = RemoteCommand<MPRatingCommandEvent>(.rating)
 
-    public static let like = RemoteCommand(.like)
+    public static let like = RemoteCommand<MPFeedbackCommandEvent>(.like)
 
-    public static let dislike = RemoteCommand(.dislike)
+    public static let dislike = RemoteCommand<MPFeedbackCommandEvent>(.dislike)
 
-    public static let bookmark = RemoteCommand(.bookmark)
+    public static let bookmark = RemoteCommand<MPFeedbackCommandEvent>(.bookmark)
 }
 
 extension RemoteCommand {
@@ -102,8 +102,8 @@ public enum Command: CaseIterable {
         case .changePlaybackRate:     \.changePlaybackRateCommand
         case .changeRepeatMode:       \.changeRepeatModeCommand
         case .changeShuffleMode:      \.changeShuffleModeCommand
-        case .nextTrack:              \.nextTrackCommand
-        case .previousTrack:          \.previousTrackCommand
+        case .next:                   \.nextTrackCommand
+        case .previous:               \.previousTrackCommand
         case .seekForward:            \.seekForwardCommand
         case .seekBackward:           \.seekBackwardCommand
         case .changePlaybackPosition: \.changePlaybackPositionCommand
@@ -122,7 +122,7 @@ public enum Command: CaseIterable {
         remoteCommand.addTarget { handler(self, $0) }
     }
 
-    func remoteHandler() {
+    func removeHandler() {
         remoteCommand.removeTarget(nil)
     }
 }
