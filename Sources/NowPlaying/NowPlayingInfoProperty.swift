@@ -7,7 +7,7 @@
 
 import MediaPlayer
 
-public class _AnyProperty {
+public class _AnyNowPlayingInfoProperty {
 
     public let name: String
 
@@ -16,8 +16,6 @@ public class _AnyProperty {
     }
 }
 
-public class _AnyNowPlayingInfoProperty: _AnyProperty { }
-
 public class NowPlayingInfoProperty<Value>: _AnyNowPlayingInfoProperty {
 
     fileprivate init(_ name: String) {
@@ -25,7 +23,7 @@ public class NowPlayingInfoProperty<Value>: _AnyNowPlayingInfoProperty {
     }
 }
 
-private typealias NowPlayingInfoProperties = _AnyNowPlayingInfoProperty
+public typealias NowPlayingInfoProperties = _AnyNowPlayingInfoProperty
 
 private typealias Property = NowPlayingInfoProperty
 
