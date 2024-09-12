@@ -25,8 +25,8 @@ class RemoteCommandController {
         }
     }
 
-    func addCommand<Event>(
-        _ command: RemoteCommand<Event>,
+    public func addCommand<Command, Event>(
+        _ command: RemoteCommand<Command, Event>,
         handler: @escaping (Event) -> MPRemoteCommandHandlerStatus
     ) {
         command.addHandler(handler)

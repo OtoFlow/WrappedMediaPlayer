@@ -11,58 +11,26 @@ public class _AnyRemoteCommand { }
 
 public typealias RemoteCommands = _AnyRemoteCommand
 
-public class RemoteCommand<Event: MPRemoteCommandEvent>: _AnyRemoteCommand {
+@dynamicMemberLookup
+public class RemoteCommand<Command: MPRemoteCommand, Event: MPRemoteCommandEvent>: _AnyRemoteCommand {
 
-    public let command: Command
+    private let command: KeyPath<MPRemoteCommandCenter, Command>
 
-    public init(_ command: Command) {
+    public init(
+        _ command: KeyPath<MPRemoteCommandCenter, Command>,
+        event: Event.Type = MPRemoteCommandEvent.self
+    ) {
         self.command = command
     }
 
-    public init(_ command: Command, type: Event.Type = MPRemoteCommandEvent.self) {
-        self.command = command
+    public subscript<Property>(dynamicMember keyPath: ReferenceWritableKeyPath<Command, Property>) -> Property {
+        get { MPRemoteCommandCenter.shared()[keyPath: command][keyPath: keyPath] }
+        set { MPRemoteCommandCenter.shared()[keyPath: command][keyPath: keyPath] = newValue }
     }
-}
-
-extension RemoteCommands {
-
-    public static let pause = RemoteCommand(.pause)
-
-    public static let play = RemoteCommand(.play)
-
-    public static let stop = RemoteCommand(.stop)
-
-    public static let togglePlayPause = RemoteCommand(.togglePlayPause)
-
-    public static let changePlaybackRate = RemoteCommand<MPChangePlaybackRateCommandEvent>(.changePlaybackRate)
-
-    public static let changeRepeatMode = RemoteCommand<MPChangeRepeatModeCommandEvent>(.changeRepeatMode)
-
-    public static let changeShuffleMode = RemoteCommand<MPChangeShuffleModeCommandEvent>(.changeShuffleMode)
-
-    public static let nextTrack = RemoteCommand(.next)
-
-    public static let previousTrack = RemoteCommand(.previous)
-
-    public static let seekForward = RemoteCommand<MPSeekCommandEvent>(.seekForward)
-
-    public static let seekBackward = RemoteCommand<MPSeekCommandEvent>(.seekBackward)
-
-    public static let changePlaybackPosition = RemoteCommand<MPChangePlaybackPositionCommandEvent>(.changePlaybackPosition)
-
-    public static let rating = RemoteCommand<MPRatingCommandEvent>(.rating)
-
-    public static let like = RemoteCommand<MPFeedbackCommandEvent>(.like)
-
-    public static let dislike = RemoteCommand<MPFeedbackCommandEvent>(.dislike)
-
-    public static let bookmark = RemoteCommand<MPFeedbackCommandEvent>(.bookmark)
-}
-
-extension RemoteCommand {
 
     public func addHandler(_ handler: @escaping (_ event: Event) -> MPRemoteCommandHandlerStatus) {
-        command.addHandler { _, event in
+        let command = MPRemoteCommandCenter.shared()[keyPath: command]
+        command.addTarget { event in
             guard case let event as Event = event else {
                 return .commandFailed
             }
@@ -71,15 +39,62 @@ extension RemoteCommand {
     }
 }
 
+extension RemoteCommands {
+
+    public static let pause = RemoteCommand(\.pauseCommand)
+
+    public static let play = RemoteCommand(\.playCommand)
+
+    public static let stop = RemoteCommand(\.stopCommand)
+
+    public static let togglePlayPause = RemoteCommand(\.togglePlayPauseCommand)
+
+    public static let enableLanguageOption = RemoteCommand(\.enableLanguageOptionCommand)
+
+    public static let disableLanguageOption = RemoteCommand(\.disableLanguageOptionCommand)
+
+    public static let changePlaybackRate = RemoteCommand(\.changePlaybackRateCommand, event: MPChangePlaybackRateCommandEvent.self)
+
+    public static let changeRepeatMode = RemoteCommand(\.changeRepeatModeCommand, event: MPChangeRepeatModeCommandEvent.self)
+
+    public static let changeShuffleMode = RemoteCommand(\.changeShuffleModeCommand, event: MPChangeShuffleModeCommandEvent.self)
+
+    public static let nextTrack = RemoteCommand(\.nextTrackCommand)
+
+    public static let previousTrack = RemoteCommand(\.previousTrackCommand)
+
+    public static let skipForward = RemoteCommand(\.skipForwardCommand, event: MPSkipIntervalCommandEvent.self)
+
+    public static let skipBackward = RemoteCommand(\.skipBackwardCommand, event: MPSkipIntervalCommandEvent.self)
+
+    public static let seekForward = RemoteCommand(\.seekForwardCommand, event: MPSeekCommandEvent.self)
+
+    public static let seekBackward = RemoteCommand(\.seekBackwardCommand, event: MPSeekCommandEvent.self)
+
+    public static let changePlaybackPosition = RemoteCommand(\.changePlaybackPositionCommand, event: MPChangePlaybackPositionCommandEvent.self)
+
+    public static let rating = RemoteCommand(\.ratingCommand, event: MPRatingCommandEvent.self)
+
+    public static let like = RemoteCommand(\.likeCommand, event: MPFeedbackCommandEvent.self)
+
+    public static let dislike = RemoteCommand(\.dislikeCommand, event: MPFeedbackCommandEvent.self)
+
+    public static let bookmark = RemoteCommand(\.bookmarkCommand, event: MPFeedbackCommandEvent.self)
+}
+
 public enum Command: CaseIterable {
 
     case pause, play, stop, togglePlayPause
+
+    case enableLanguageOption, disableLanguageOption
 
     case changePlaybackRate
 
     case changeRepeatMode, changeShuffleMode
 
-    case nextTrack, previousTrack
+    case next, previous
+
+    case skipForward, skipBackward
 
     case seekForward, seekBackward
 
@@ -99,11 +114,15 @@ public enum Command: CaseIterable {
         case .play:                   \.playCommand
         case .stop:                   \.stopCommand
         case .togglePlayPause:        \.togglePlayPauseCommand
+        case .enableLanguageOption:   \.enableLanguageOptionCommand
+        case .disableLanguageOption:  \.disableLanguageOptionCommand
         case .changePlaybackRate:     \.changePlaybackRateCommand
         case .changeRepeatMode:       \.changeRepeatModeCommand
         case .changeShuffleMode:      \.changeShuffleModeCommand
         case .next:                   \.nextTrackCommand
         case .previous:               \.previousTrackCommand
+        case .skipForward:            \.skipForwardCommand
+        case .skipBackward:           \.skipBackwardCommand
         case .seekForward:            \.seekForwardCommand
         case .seekBackward:           \.seekBackwardCommand
         case .changePlaybackPosition: \.changePlaybackPositionCommand
