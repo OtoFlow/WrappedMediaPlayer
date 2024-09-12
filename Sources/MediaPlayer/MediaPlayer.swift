@@ -43,7 +43,20 @@ open class MediaPlayer<T: MediaEndpoint> {
 
     public var endpoint: Endpoint
 
-    let nowPlayingController = NowPlayingInfoController()
+    private lazy var remoteCommandController = RemoteCommandController(self)
+
+    private let nowPlayingController = NowPlayingInfoController()
+
+    public var remoteCommands: [Command] = [] {
+        didSet {
+            remoteCommandController.setupCommands(remoteCommands)
+        }
+    }
+
+    public var playbackRate: Float {
+        get { endpoint.playbackRate }
+        set { endpoint.playbackRate = newValue }
+    }
 
     public var currentTime: TimeInterval {
         endpoint.currentTime
@@ -171,6 +184,8 @@ extension MediaPlayer: WrappedPlayerDelegate {
         state = newState
 
         nowPlayingController.playbackState = newState == .playing ? .playing : .paused
+
+        nowPlayingController.updater.update(.rate, value: newState == .playing ? 1 : 0)
     }
 
     public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
