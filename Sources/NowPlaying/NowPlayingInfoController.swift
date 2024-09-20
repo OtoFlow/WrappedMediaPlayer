@@ -46,6 +46,13 @@ open class NowPlayingInfoController {
         }
     }
 
+    @discardableResult
+    private func remove(_ propertyName: String) -> Any? {
+        synchronize {
+            nowPlayingInfo?.removeValue(forKey: propertyName)
+        }
+    }
+
     private func clear() {
         synchronize {
             nowPlayingInfo = nil
@@ -75,7 +82,11 @@ extension NowPlayingInfoController {
 
         @discardableResult
         public func update<Value>(_ property: NowPlayingInfoProperty<Value>, value: Value) -> Self {
-            controller.update(property.name, value: value)
+            if (value as? _OptionalProtocol)?._isNil == true {
+                controller.remove(property.name)
+            } else {
+                controller.update(property.name, value: value)
+            }
             isApplied = false
             return self
         }
