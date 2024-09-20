@@ -116,20 +116,20 @@ public enum Command: CaseIterable {
         case .togglePlayPause:        \.togglePlayPauseCommand
         case .enableLanguageOption:   \.enableLanguageOptionCommand
         case .disableLanguageOption:  \.disableLanguageOptionCommand
-        case .changePlaybackRate:     \.changePlaybackRateCommand
-        case .changeRepeatMode:       \.changeRepeatModeCommand
-        case .changeShuffleMode:      \.changeShuffleModeCommand
+        case .changePlaybackRate:     \.changePlaybackRateCommand as (MPRemoteCommandCenter) -> MPChangePlaybackRateCommand
+        case .changeRepeatMode:       \.changeRepeatModeCommand as (MPRemoteCommandCenter) -> MPChangeRepeatModeCommand
+        case .changeShuffleMode:      \.changeShuffleModeCommand as (MPRemoteCommandCenter) -> MPChangeShuffleModeCommand
         case .next:                   \.nextTrackCommand
         case .previous:               \.previousTrackCommand
-        case .skipForward:            \.skipForwardCommand
-        case .skipBackward:           \.skipBackwardCommand
+        case .skipForward:            \.skipForwardCommand as (MPRemoteCommandCenter) -> MPSkipIntervalCommand
+        case .skipBackward:           \.skipBackwardCommand as (MPRemoteCommandCenter) -> MPSkipIntervalCommand
         case .seekForward:            \.seekForwardCommand
         case .seekBackward:           \.seekBackwardCommand
-        case .changePlaybackPosition: \.changePlaybackPositionCommand
-        case .rating:                 \.ratingCommand
-        case .like:                   \.likeCommand
-        case .dislike:                \.dislikeCommand
-        case .bookmark:               \.bookmarkCommand
+        case .changePlaybackPosition: \.changePlaybackPositionCommand as (MPRemoteCommandCenter) -> MPChangePlaybackPositionCommand
+        case .rating:                 \.ratingCommand as (MPRemoteCommandCenter) -> MPRatingCommand
+        case .like:                   \.likeCommand as (MPRemoteCommandCenter) -> MPFeedbackCommand
+        case .dislike:                \.dislikeCommand as (MPRemoteCommandCenter) -> MPFeedbackCommand
+        case .bookmark:               \.bookmarkCommand as (MPRemoteCommandCenter) -> MPFeedbackCommand
         }
     }
 
