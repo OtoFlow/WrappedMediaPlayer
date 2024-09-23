@@ -9,9 +9,9 @@
 import Foundation
 import Combine
 
-public struct TimeElapse {
+public struct TimeElapse: Equatable {
 
-    static var frozen = TimeElapse(seconds: .zero, currentTime: .zero, duration: .zero)
+    public static var frozen = TimeElapse(seconds: .zero, currentTime: .zero, duration: .zero)
 
     public var seconds: TimeInterval
 
@@ -52,6 +52,8 @@ open class MediaPlayer<T: MediaEndpoint> {
             remoteCommandController.setupCommands(remoteCommands)
         }
     }
+
+    private lazy var infoUpdater: NowPlayingInfoController.Updater = nowPlayingController.updater
 
     public var playbackRate: Float {
         get { endpoint.playbackRate }
@@ -148,27 +150,29 @@ extension MediaPlayer: MediaPlaybackDelegate {
         currentItem = newItem
 
         guard let item = newItem else {
-            nowPlayingController.updater.clear()
+            infoUpdater.clear().apply()
             return
         }
 
-        nowPlayingController.updater
+        infoUpdater
+            .clear()
             .update(.assertURL, value: item.getSourceUrl())
             .update(.mediaType, value: item.getMediaType().nowPlaying.rawValue)
             .update(.title, value: item.getTitle())
             .update(.artist, value: item.getArtists())
             .update(.albumTitle, value: item.getAlbumTitle())
+            .apply()
 
         Task { [weak self] in
             guard let artwork = await item.getArtwork() else {
-                self?.nowPlayingController.updater.update(.artwork, value: nil)
                 return
             }
 
-            self?.nowPlayingController.updater.update(.artwork, value: .init(
-                boundsSize: artwork.size,
-                requestHandler: { _ in artwork }
-            ))
+            self?.infoUpdater
+                .update(.artwork, value: .init(
+                    boundsSize: artwork.size,
+                    requestHandler: { _ in artwork }
+                ))
         }
     }
 
@@ -184,8 +188,6 @@ extension MediaPlayer: WrappedPlayerDelegate {
         state = newState
 
         nowPlayingController.playbackState = newState == .playing ? .playing : .paused
-
-        nowPlayingController.updater.update(.rate, value: newState == .playing ? 1 : 0)
     }
 
     public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
@@ -195,9 +197,10 @@ extension MediaPlayer: WrappedPlayerDelegate {
     public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
         timeElapse = TimeElapse(seconds: seconds, currentTime: currentTime, duration: duration)
 
-        nowPlayingController.updater
+        infoUpdater
             .update(.currentTime, value: currentTime)
             .update(.duration, value: duration)
+            .apply()
     }
 
     public func playerPlayToEndTime(_ player: any WrappedPlayer) {

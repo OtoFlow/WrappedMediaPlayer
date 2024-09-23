@@ -74,10 +74,8 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         queue.$currentItem
             .sink { [unowned self] item in
                 currentItem = item
-                if let item {
-                    load(item: item)
-                }
                 delegate?.playback(itemChanged: item)
+                item.map(load(item:))
             }
             .store(in: &cancellables)
 
