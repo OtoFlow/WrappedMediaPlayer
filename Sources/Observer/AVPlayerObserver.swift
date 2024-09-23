@@ -16,51 +16,26 @@ class AVPlayerObserver: NSObject {
 
     weak var delegate: Delegate?
 
+    private var statusObserver: NSObjectProtocol!
+    private var timeControlObserver: NSObjectProtocol!
+
     func startObserving(player thePlayer: AVPlayer) {
         stopObserveing()
 
         player = thePlayer
 
-        thePlayer.addObserver(self, for: \.status, options: [.initial, .new], context: &Self.context)
-        thePlayer.addObserver(self, for: \.timeControlStatus, options: [.new], context: &Self.context)
+        statusObserver = thePlayer.observe(\.currentItem?.status, options: .initial) { [unowned self] _, _ in
+            delegate?.player(player, statusChanged: player.currentItem?.status ?? .unknown)
+        }
+
+        timeControlObserver = thePlayer.observe(\.timeControlStatus, options: .new) { [unowned self] _, _ in
+            delegate?.player(player, timeControlStatusChanged: player.timeControlStatus)
+        }
     }
 
     func stopObserveing() {
-        player?.removeObserver(self, for: \.status)
-        player?.removeObserver(self, for: \.timeControlStatus)
-    }
-
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard context == &Self.context, let keyPath else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-            return
-        }
-
-        switch keyPath {
-        case #keyPath(AVPlayer.status):
-            handleStatusChange(change)
-        case #keyPath(AVPlayer.timeControlStatus):
-            handleTimeControlStatusChange(change)
-        default: ()
-        }
-    }
-
-    private func handleStatusChange(_ change: [NSKeyValueChangeKey: Any]?) {
-        let status: AVPlayer.Status
-        if let statusNumber = change?[.newKey] as? NSNumber {
-            status = AVPlayer.Status(rawValue: statusNumber.intValue)!
-        } else {
-            status = .unknown
-        }
-        delegate?.player(player, statusChanged: status)
-    }
-
-    private func handleTimeControlStatusChange(_ change: [NSKeyValueChangeKey: Any]?) {
-        let status: AVPlayer.TimeControlStatus
-        if let statusNumber = change?[.newKey] as? NSNumber {
-            status = AVPlayer.TimeControlStatus(rawValue: statusNumber.intValue)!
-            delegate?.player(player, timeControlStatusChanged: status)
-        }
+        statusObserver = nil
+        timeControlObserver = nil
     }
 }
 
@@ -68,7 +43,7 @@ extension AVPlayerObserver {
 
     protocol Delegate: AnyObject {
 
-        func player(_ player: AVPlayer, statusChanged status: AVPlayer.Status)
+        func player(_ player: AVPlayer, statusChanged status: AVPlayerItem.Status)
 
         func player(_ player: AVPlayer, timeControlStatusChanged timeControlStatus: AVPlayer.TimeControlStatus)
     }

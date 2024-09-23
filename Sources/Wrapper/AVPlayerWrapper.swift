@@ -49,12 +49,19 @@ public final class AVPlayerWrapper: WrappedPlayer {
     }
 
     public var duration: TimeInterval {
-        if let seconds = player.currentItem?.duration.seconds, !seconds.isNaN {
-            return seconds
-        } else if let seconds = player.currentItem?.seekableTimeRanges.last?.timeRangeValue.duration.seconds,
-                  !seconds.isNaN {
+        guard let currentItem = player.currentItem else {
+            return .zero
+        }
+
+        let seconds = currentItem.duration.seconds
+        if !seconds.isNaN {
             return seconds
         }
+
+        if let seconds = currentItem.seekableTimeRanges.last?.timeRangeValue.duration.seconds, !seconds.isNaN {
+            return seconds
+        }
+
         return .zero
     }
 
@@ -90,7 +97,7 @@ public final class AVPlayerWrapper: WrappedPlayer {
         if player.currentItem == nil {
 //            timeToSeekToAfterLoading = seconds
         } else {
-            let time = CMTimeMakeWithSeconds(seconds, preferredTimescale: 1000)
+            let time = CMTime(seconds: seconds, preferredTimescale: 1000)
             player.seek(to: time) { finished in
                 self.delegate?.player(self, seekTo: time.seconds, finished: finished)
             }
@@ -147,13 +154,14 @@ extension AVPlayerWrapper: VideoAssociation {
 // MARK: - AVPlayerObserver.Delegate
 extension AVPlayerWrapper: AVPlayerObserver.Delegate {
 
-    func player(_ player: AVPlayer, statusChanged status: AVPlayer.Status) {
+    func player(_ player: AVPlayer, statusChanged status: AVPlayerItem.Status) {
         switch status {
         case .readyToPlay:
-            state = .idle
+            state = .readyToPlay
         case .failed:
             state = .failed
-        default: ()
+        default:
+            state = .idle
         }
     }
 

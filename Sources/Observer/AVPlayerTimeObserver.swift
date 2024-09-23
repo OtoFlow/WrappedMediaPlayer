@@ -12,7 +12,7 @@ class AVPlayerTimeObserver: NSObject {
 
     enum Constant {
         static var boundaryTime = CMTime(value: 1, timescale: 1000)
-        static var periodicTime = CMTime(value: 1, timescale: 1)
+        static var periodicTime = CMTime(seconds: 1, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
     }
 
     private var player: AVPlayer!

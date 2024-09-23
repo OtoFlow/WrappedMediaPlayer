@@ -173,11 +173,19 @@ extension MediaPlayer: MediaPlaybackDelegate {
                     boundsSize: artwork.size,
                     requestHandler: { _ in artwork }
                 ))
+                .apply()
         }
     }
 
     public func playback(itemsChanged newItems: [Item]) {
         items = newItems
+    }
+
+    private func handlePlaybackChange() {
+        infoUpdater
+            .update(.currentTime, value: currentTime)
+            .update(.duration, value: duration)
+            .apply()
     }
 }
 
@@ -188,19 +196,16 @@ extension MediaPlayer: WrappedPlayerDelegate {
         state = newState
 
         nowPlayingController.playbackState = newState == .playing ? .playing : .paused
+
+        handlePlaybackChange()
     }
 
     public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
-
+        handlePlaybackChange()
     }
 
     public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
         timeElapse = TimeElapse(seconds: seconds, currentTime: currentTime, duration: duration)
-
-        infoUpdater
-            .update(.currentTime, value: currentTime)
-            .update(.duration, value: duration)
-            .apply()
     }
 
     public func playerPlayToEndTime(_ player: any WrappedPlayer) {
