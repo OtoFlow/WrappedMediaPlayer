@@ -72,6 +72,16 @@ public final class MPVPlayerWrapper: WrappedPlayer {
         player.seek(by: seconds)
     }
 
+    public func seek(to seconds: TimeInterval) async -> Bool {
+        player.seek(to: seconds)
+        return true
+    }
+
+    public func seek(by seconds: TimeInterval) async -> Bool {
+        player.seek(by: seconds)
+        return true
+    }
+
     init(_ player: MPVPlayer = .init()) {
         self.player = player
 

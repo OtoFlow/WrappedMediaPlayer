@@ -191,8 +191,16 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
         player.seek(to: seconds)
     }
 
-    public func seek(by offset: TimeInterval) {
-        player.seek(by: offset)
+    public func seek(by seconds: TimeInterval) {
+        player.seek(by: seconds)
+    }
+
+    public func seek(to seconds: TimeInterval) async -> Bool {
+        await player.seek(to: seconds)
+    }
+
+    public func seek(by seconds: TimeInterval) async -> Bool {
+        await player.seek(by: seconds)
     }
 }
 

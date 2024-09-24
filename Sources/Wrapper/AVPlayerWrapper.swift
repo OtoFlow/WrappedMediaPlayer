@@ -43,6 +43,12 @@ public final class AVPlayerWrapper: WrappedPlayer {
         }
     }
 
+    public private(set) var itemState: MediaItemState = .idle {
+        didSet {
+            delegate?.player(self, itemStateChanged: itemState)
+        }
+    }
+
     public var currentTime: TimeInterval {
         let seconds = player.currentTime().seconds
         return seconds.isNaN ? .zero : seconds
@@ -94,18 +100,34 @@ public final class AVPlayerWrapper: WrappedPlayer {
     }
 
     public func seek(to seconds: TimeInterval) {
+        let time = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         if player.currentItem == nil {
 //            timeToSeekToAfterLoading = seconds
         } else {
-            let time = CMTime(seconds: seconds, preferredTimescale: 1000)
-            player.seek(to: time) { finished in
-                self.delegate?.player(self, seekTo: time.seconds, finished: finished)
+            player.seek(to: time) { isFinished in
+                self.delegate?.player(self, seekTo: seconds, finished: isFinished)
             }
         }
     }
 
-    public func seek(by offset: TimeInterval) {
+    public func seek(by seconds: TimeInterval) {
 
+    }
+
+    public func seek(to seconds: TimeInterval) async -> Bool {
+        let time = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        if player.currentItem == nil {
+//            timeToSeekToAfterLoading = seconds
+            return false
+        } else {
+            let isFinished = await player.seek(to: time)
+            delegate?.player(self, seekTo: seconds, finished: isFinished)
+            return isFinished
+        }
+    }
+
+    public func seek(by seconds: TimeInterval) async -> Bool {
+        false
     }
 
     init(_ player: AVPlayer = .init()) {
@@ -154,7 +176,18 @@ extension AVPlayerWrapper: VideoAssociation {
 // MARK: - AVPlayerObserver.Delegate
 extension AVPlayerWrapper: AVPlayerObserver.Delegate {
 
-    func player(_ player: AVPlayer, statusChanged status: AVPlayerItem.Status) {
+    func player(_ player: AVPlayer, itemStatusChanged status: AVPlayerItem.Status) {
+        switch status {
+        case .readyToPlay:
+            itemState = .readyToPlay
+        case .failed:
+            itemState = .failed
+        default:
+            itemState = .idle
+        }
+    }
+
+    func player(_ player: AVPlayer, statusChanged status: AVPlayer.Status) {
         switch status {
         case .readyToPlay:
             state = .readyToPlay

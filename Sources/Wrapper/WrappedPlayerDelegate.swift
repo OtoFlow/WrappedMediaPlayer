@@ -9,6 +9,8 @@ import Foundation
 
 public protocol WrappedPlayerDelegate: AnyObject {
 
+    func player(_ player: WrappedPlayer, itemStateChanged newState: MediaItemState)
+
     func player(_ player: WrappedPlayer, stateChanged newState: MediaState)
 
     func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool)

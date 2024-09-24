@@ -31,7 +31,11 @@ public protocol WrappedPlayer: AnyObject {
 
     func seek(to seconds: TimeInterval)
 
-    func seek(by offset: TimeInterval)
+    func seek(by seconds: TimeInterval)
+
+    func seek(to seconds: TimeInterval) async -> Bool
+
+    func seek(by seconds: TimeInterval) async -> Bool 
 }
 
 extension WrappedPlayer {

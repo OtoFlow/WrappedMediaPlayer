@@ -16,6 +16,7 @@ class AVPlayerObserver: NSObject {
 
     weak var delegate: Delegate?
 
+    private var itemStatusObserver: NSObjectProtocol!
     private var statusObserver: NSObjectProtocol!
     private var timeControlObserver: NSObjectProtocol!
 
@@ -24,8 +25,12 @@ class AVPlayerObserver: NSObject {
 
         player = thePlayer
 
-        statusObserver = thePlayer.observe(\.currentItem?.status, options: .initial) { [unowned self] _, _ in
-            delegate?.player(player, statusChanged: player.currentItem?.status ?? .unknown)
+        itemStatusObserver = thePlayer.observe(\.currentItem?.status, options: .initial) { [unowned self] _, _ in
+            delegate?.player(player, itemStatusChanged: player.currentItem?.status ?? .unknown)
+        }
+
+        statusObserver = thePlayer.observe(\.status, options: [.initial, .new]) { [unowned self] _, _ in
+            delegate?.player(player, statusChanged: player.status)
         }
 
         timeControlObserver = thePlayer.observe(\.timeControlStatus, options: .new) { [unowned self] _, _ in
@@ -34,6 +39,7 @@ class AVPlayerObserver: NSObject {
     }
 
     func stopObserveing() {
+        itemStatusObserver = nil
         statusObserver = nil
         timeControlObserver = nil
     }
@@ -43,7 +49,9 @@ extension AVPlayerObserver {
 
     protocol Delegate: AnyObject {
 
-        func player(_ player: AVPlayer, statusChanged status: AVPlayerItem.Status)
+        func player(_ player: AVPlayer, itemStatusChanged status: AVPlayerItem.Status)
+
+        func player(_ player: AVPlayer, statusChanged status: AVPlayer.Status)
 
         func player(_ player: AVPlayer, timeControlStatusChanged timeControlStatus: AVPlayer.TimeControlStatus)
     }

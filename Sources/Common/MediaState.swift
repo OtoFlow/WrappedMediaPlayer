@@ -23,3 +23,12 @@ public enum MediaState {
 
     case ended
 }
+
+public enum MediaItemState {
+
+    case readyToPlay
+
+    case failed
+
+    case idle
+}

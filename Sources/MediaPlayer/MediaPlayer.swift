@@ -141,6 +141,14 @@ open class MediaPlayer<T: MediaEndpoint> {
     public func seek(by seconds: TimeInterval) {
         endpoint.seek(by: seconds)
     }
+
+    public func seek(to seconds: TimeInterval) async -> Bool {
+        await endpoint.seek(to: seconds)
+    }
+
+    public func seek(by seconds: TimeInterval) async -> Bool {
+        await endpoint.seek(by: seconds)
+    }
 }
 
 // MARK: - MediaPlaybackDelegate
@@ -192,16 +200,22 @@ extension MediaPlayer: MediaPlaybackDelegate {
 // MARK: - WrappedPlayerDelegate
 extension MediaPlayer: WrappedPlayerDelegate {
 
-    public func player(_ player: WrappedPlayer, stateChanged newState: MediaState) {
-        state = newState
-
-        nowPlayingController.playbackState = newState == .playing ? .playing : .paused
+    public func player(_ player: any WrappedPlayer, itemStateChanged newState: MediaItemState) {
+        guard newState == .readyToPlay else { return }
 
         handlePlaybackChange()
     }
 
-    public func player(_ player: WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
-        handlePlaybackChange()
+    public func player(_ player: WrappedPlayer, stateChanged newState: MediaState) {
+        state = newState
+
+        nowPlayingController.playbackState = newState == .playing ? .playing : .paused
+    }
+
+    public func player(_ player: any WrappedPlayer, seekTo seconds: TimeInterval, finished: Bool) {
+        if finished {
+            handlePlaybackChange()
+        }
     }
 
     public func player(_ player: WrappedPlayer, secondsElapse seconds: TimeInterval) {
