@@ -109,7 +109,7 @@ open class MediaPlayer<T: MediaEndpoint> {
 
     @discardableResult
     public func next() -> Item? {
-        endpoint.next()
+        endpoint.next(playWhenReady: nil)
     }
 
     @discardableResult
@@ -203,6 +203,8 @@ extension MediaPlayer: WrappedPlayerDelegate {
     public func player(_ player: any WrappedPlayer, itemStateChanged newState: MediaItemState) {
         guard newState == .readyToPlay else { return }
 
+        timeElapse = .init(seconds: .zero, currentTime: currentTime, duration: duration)
+
         handlePlaybackChange()
     }
 
@@ -223,6 +225,6 @@ extension MediaPlayer: WrappedPlayerDelegate {
     }
 
     public func playerPlayToEndTime(_ player: any WrappedPlayer) {
-        _ = endpoint.next()
+        _ = endpoint.next(playWhenReady: true)
     }
 }

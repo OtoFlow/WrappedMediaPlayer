@@ -41,7 +41,7 @@ public protocol MediaEndpoint {
 
     func previous() -> Item?
 
-    func next() -> Item?
+    func next(playWhenReady: Bool?) -> Item?
 
     func jumpToItem(at index: Int, playWhenReady: Bool?) -> Item?
 
