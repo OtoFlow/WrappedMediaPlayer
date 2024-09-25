@@ -7,7 +7,9 @@
 
 import Foundation
 
-final class QueueManager<Item> {
+final class QueueManager<Item: MediaItem> {
+
+    var playbackDelegate: (any MediaPlaybackDelegate<Item>)?
 
     private let _lock = NSRecursiveLock()
 
@@ -31,9 +33,10 @@ final class QueueManager<Item> {
     @Published
     private(set) var currentItem: Item?
 
-    @Published
     private(set) var items: [Item] = [] {
         didSet {
+            playbackDelegate?.playback(itemsChanged: items)
+
             if oldValue.isEmpty && items.count > 0 {
                 jump(to: 0)
             }

@@ -48,6 +48,7 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
     public weak var delegate: (any MediaPlaybackDelegate<Item>)? {
         didSet {
             audioPlayer.delegate = delegate
+            queue.playbackDelegate = delegate
         }
     }
 
@@ -76,12 +77,6 @@ public final class LocalMediaEndpoint<V: WrappedVideoPlayer, Item: MediaItem>: M
                 currentItem = item
                 delegate?.playback(itemChanged: item)
                 item.map(load(item:))
-            }
-            .store(in: &cancellables)
-
-        queue.$items
-            .sink { [unowned self] items in
-                delegate?.playback(itemsChanged: items)
             }
             .store(in: &cancellables)
     }
