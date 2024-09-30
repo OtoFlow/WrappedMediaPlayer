@@ -53,6 +53,8 @@ open class MediaPlayer<T: MediaEndpoint> {
         }
     }
 
+    private var lastArtworkImageIdentifier: String?
+
     private lazy var infoUpdater: NowPlayingInfoController.Updater = nowPlayingController.updater
 
     public var playbackRate: Float {
@@ -162,27 +164,36 @@ extension MediaPlayer: MediaPlaybackDelegate {
             return
         }
 
+        let artworkIdentifier = item.getArtworkIdentifier()
+
+        if artworkIdentifier != lastArtworkImageIdentifier {
+            lastArtworkImageIdentifier = artworkIdentifier
+
+            infoUpdater.update(.artwork, value: nil)
+
+            Task { [weak self] in
+                guard let artwork = await item.getArtwork() else {
+                    return
+                }
+
+                self?.infoUpdater
+                    .update(.artwork, value: .init(
+                        boundsSize: artwork.size,
+                        requestHandler: { _ in artwork }
+                    ))
+                    .apply()
+            }
+        }
+
         infoUpdater
-            .clear()
+            .update(.currentTime, value: nil)
+            .update(.duration, value: nil)
             .update(.assertURL, value: item.getSourceUrl())
             .update(.mediaType, value: item.getMediaType().nowPlaying.rawValue)
             .update(.title, value: item.getTitle())
             .update(.artist, value: item.getArtists())
             .update(.albumTitle, value: item.getAlbumTitle())
             .apply()
-
-        Task { [weak self] in
-            guard let artwork = await item.getArtwork() else {
-                return
-            }
-
-            self?.infoUpdater
-                .update(.artwork, value: .init(
-                    boundsSize: artwork.size,
-                    requestHandler: { _ in artwork }
-                ))
-                .apply()
-        }
     }
 
     public func playback(itemsChanged newItems: [Item]) {

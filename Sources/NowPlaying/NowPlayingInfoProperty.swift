@@ -39,9 +39,9 @@ extension NowPlayingInfoProperties {
 
     public static var albumArtist = Property<String?>(MPMediaItemPropertyAlbumArtist)
 
-    public static var duration    = Property<TimeInterval>(MPMediaItemPropertyPlaybackDuration)
+    public static var duration    = Property<TimeInterval?>(MPMediaItemPropertyPlaybackDuration)
 
-    public static var currentTime = Property<TimeInterval>(MPNowPlayingInfoPropertyElapsedPlaybackTime)
+    public static var currentTime = Property<TimeInterval?>(MPNowPlayingInfoPropertyElapsedPlaybackTime)
 
     public static var progress    = Property<Double>(MPNowPlayingInfoPropertyPlaybackProgress)
 

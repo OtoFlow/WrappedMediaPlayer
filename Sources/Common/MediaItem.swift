@@ -38,12 +38,18 @@ public protocol MediaItem {
     func getAlbumTitle() -> String?
 
     func getArtwork() async -> UIImage?
+
+    func getArtworkIdentifier() -> String?
 }
 
 extension MediaItem {
 
     public func getMediaType() -> MediaType {
         .audio
+    }
+
+    public func getArtworkIdentifier() -> String? {
+        nil
     }
 }
 
@@ -73,5 +79,9 @@ public struct AnyMediaItem: MediaItem {
 
     public func getArtwork() async -> UIImage? {
         await base.getArtwork()
+    }
+
+    public func getArtworkIdentifier() -> String? {
+        base.getArtworkIdentifier()
     }
 }
