@@ -51,7 +51,9 @@ final class QueueManager<Item: MediaItem> {
 
     var nextItems: [Item] {
         synchronize {
-            Array(items[currentIndex + 1..<items.count])
+            currentIndex < items.count 
+                ? Array(items[currentIndex + 1..<items.count])
+                : []
         }
     }
 
