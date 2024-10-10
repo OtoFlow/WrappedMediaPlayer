@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "WrappedMediaPlayer",
-    platforms: [.iOS(.v13)],
+    platforms: [.iOS(.v16)],
     products: [
         .library(name: "WrappedMediaPlayer", targets: ["WrappedMediaPlayer"]),
     ],
